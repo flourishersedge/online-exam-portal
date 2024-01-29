@@ -1,6 +1,7 @@
 var testModel = require('../models/test');
 var questionModel = require('../models/question');
 const testRegistrationModel = require('../models/testRegistration');
+const moment = require('moment-timezone');
 
 var getTestStatus = (test) => {
   if(test.status === 'CANCELLED')
@@ -92,6 +93,14 @@ var createTest = async (req,res,next) => {
     return;
   }
 
+  // Convert the startTime, endTime, regStartTime, regEndTime, and resultTime to India time zone
+  const indiaTimeZone = 'Asia/Kolkata';
+  const indiaStartTime = moment.tz(req.body.startTime, indiaTimeZone).toDate();
+  const indiaEndTime = moment.tz(req.body.endTime, indiaTimeZone).toDate();
+  const indiaRegStartTime = moment.tz(req.body.regStartTime, indiaTimeZone).toDate();
+  const indiaRegEndTime = moment.tz(req.body.regEndTime, indiaTimeZone).toDate();
+  const indiaResultTime = moment.tz(req.body.resultTime, indiaTimeZone).toDate();
+
   var genQue = await generateTestpaper(req.body.subjects,req.body.maxmarks, req.body.queTypes);
   if(genQue.quelist.length < 1) {
     res.json({
@@ -107,12 +116,12 @@ var createTest = async (req,res,next) => {
     queTypes : req.body.queTypes,
     questions : genQue.quelist,
     answers : genQue.anslist,
-    startTime : req.body.startTime,
-    endTime : req.body.endTime,
+    startTime : indiaStartTime,
+    endTime : indiaEndTime,
     duration : req.body.duration,
-    regStartTime : req.body.regStartTime,
-    regEndTime : req.body.regEndTime,
-    resultTime : req.body.resultTime,
+    regStartTime : indiaRegStartTime,
+    regEndTime : indiaRegEndTime,
+    resultTime : indiaResultTime,
     createdBy : creator._id
   })
   tempdata.save((err)=>{
